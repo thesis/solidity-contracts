@@ -70,6 +70,15 @@ describe("CloneFactory", () => {
         ).to.be.false
       })
     })
+
+    context("when both contracts are clones of the same contract", () => {
+      it("should return false", async () => {
+        const clone1 = await createClone()
+        const clone2 = await createClone()
+        expect(await cloneFactory.isClonePublic(clone1.address, clone2.address))
+          .to.be.false
+      })
+    })
   })
 
   async function createClone() {
