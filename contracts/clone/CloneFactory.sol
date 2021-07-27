@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.4;
+pragma solidity ^0.8.5;
 
 /*
 The MIT License (MIT)
@@ -28,10 +28,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 // EIP 1167: https://eips.ethereum.org/EIPS/eip-1167
 // clone-factory: https://github.com/optionality/clone-factory
-// Modified to use ^0.5.10; instead of ^0.4.23 solidity version
+// Modified to use ^0.8.5; instead of ^0.4.23 solidity version
 
 /* solhint-disable no-inline-assembly */
-contract CloneFactory {
+abstract contract CloneFactory {
     function createClone(address target) internal returns (address result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
