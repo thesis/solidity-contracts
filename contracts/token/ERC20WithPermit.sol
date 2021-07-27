@@ -30,10 +30,10 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
 
     uint256 public override totalSupply;
 
-    string public name;
-    string public symbol;
+    string public override name;
+    string public override symbol;
 
-    uint8 public constant decimals = 18;
+    uint8 public constant override decimals = 18;
 
     constructor(string memory _name, string memory _symbol) {
         name = _name;

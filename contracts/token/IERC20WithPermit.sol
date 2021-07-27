@@ -3,6 +3,7 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 
 /// @title  IERC20WithPermit
 /// @notice Burnable ERC20 token with EIP2612 permit functionality. User can
@@ -12,7 +13,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 ///         calling the permit function, as specified in EIP2612 standard,
 ///         paying gas fees, and possibly performing other actions in the same
 ///         transaction.
-interface IERC20WithPermit is IERC20 {
+interface IERC20WithPermit is IERC20, IERC20Metadata {
     /// @notice EIP2612 approval made with secp256k1 signature.
     ///         Users can authorize a transfer of their tokens with a signature
     ///         conforming EIP712 standard, rather than an on-chain transaction
