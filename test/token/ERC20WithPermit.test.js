@@ -108,6 +108,10 @@ describe("ERC20WithPermit", () => {
   })
 
   describe("transfer", () => {
+    afterEach("total supply remains unchanged", async () => {
+      expect(await token.totalSupply()).to.equal(initialSupply)
+    })
+
     context("when the recipient is not the zero address", () => {
       context("when the sender does not have enough balance", () => {
         const amount = initialHolderBalance.add(1)
@@ -227,6 +231,10 @@ describe("ERC20WithPermit", () => {
   })
 
   describe("transferFrom", () => {
+    afterEach("total supply remains unchanged", async () => {
+      expect(await token.totalSupply()).to.equal(initialSupply)
+    })
+
     context("when the token owner is not the zero address", () => {
       context("when the recipient is not the zero address", () => {
         context("when the spender has enough approved balance", () => {
