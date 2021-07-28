@@ -934,25 +934,100 @@ describe("ERC20WithPermit", () => {
     })
 
     context("when permission has an invalid signature", () => {
-      it("should revert", async () => {
-        const deadline = tomorrow
-        const signature = await getApproval(
-          permittingHolderBalance,
-          anotherAccount.address,
-          deadline
-        )
-
-        await expect(
-          token.connect(anotherAccount).permit(
-            anotherAccount.address, // does not match the signature
-            anotherAccount.address,
+      context("when owner doesn't match the permitting holder", () => {
+        it("should revert", async () => {
+          const deadline = tomorrow
+          const signature = await getApproval(
             permittingHolderBalance,
-            deadline,
-            signature.v,
-            signature.r,
-            signature.s
+            recipient.address,
+            deadline
           )
-        ).to.be.revertedWith("Invalid signature")
+
+          await expect(
+            token.connect(anotherAccount).permit(
+              anotherAccount.address, // does not match the signature
+              recipient.address,
+              permittingHolderBalance,
+              deadline,
+              signature.v,
+              signature.r,
+              signature.s
+            )
+          ).to.be.revertedWith("Invalid signature")
+        })
+      })
+
+      context("when spender doesn't match the signature", () => {
+        it("should revert", async () => {
+          const deadline = tomorrow
+          const signature = await getApproval(
+            permittingHolderBalance,
+            recipient.address,
+            deadline
+          )
+
+          await expect(
+            token.connect(anotherAccount).permit(
+              permittingHolder.address,
+              anotherAccount.address, // does not match the signature
+              permittingHolderBalance,
+              deadline,
+              signature.v,
+              signature.r,
+              signature.s
+            )
+          ).to.be.revertedWith("Invalid signature")
+        })
+      })
+
+      context("when 's' value is malleable", () => {
+        it("should revert", async () => {
+          const deadline = tomorrow
+          const signature = await getApproval(
+            permittingHolderBalance,
+            recipient.address,
+            deadline
+          )
+
+          const malleableS = ethers.BigNumber.from(
+            "0x7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF5D576E7357A4501DDFE92F46681B20A0"
+          ).add(1)
+
+          await expect(
+            token.connect(anotherAccount).permit(
+              permittingHolder.address,
+              recipient.address,
+              permittingHolderBalance,
+              deadline,
+              signature.v,
+              signature.r,
+              malleableS // invalid 's' value
+            )
+          ).to.be.revertedWith("Invalid signature 's' value")
+        })
+      })
+
+      context("when 'v' value is invalid", () => {
+        it("should revert", async () => {
+          const deadline = tomorrow
+          const signature = await getApproval(
+            permittingHolderBalance,
+            recipient.address,
+            deadline
+          )
+
+          await expect(
+            token.connect(anotherAccount).permit(
+              permittingHolder.address,
+              recipient.address,
+              permittingHolderBalance,
+              deadline,
+              signature.v - 27, // invalid 'v' value
+              signature.r,
+              signature.s
+            )
+          ).to.be.revertedWith("Invalid signature 'v' value")
+        })
       })
     })
 
