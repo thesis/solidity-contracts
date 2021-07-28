@@ -12,16 +12,18 @@ describe("ERC20WithPermit", () => {
   const hardhatNetworkId = 31337
 
   const initialSupply = to1e18(100)
+  const initialHolderBalance = to1e18(80)
 
   let owner
   let initialHolder
+  let secondHolder
   let recipient
   let anotherAccount
 
   let token
 
   beforeEach(async () => {
-    ;[owner, initialHolder, recipient, anotherAccount] =
+    ;[owner, initialHolder, secondHolder, recipient, anotherAccount] =
       await ethers.getSigners()
 
     const ERC20WithPermit = await ethers.getContractFactory("ERC20WithPermit")
@@ -29,6 +31,9 @@ describe("ERC20WithPermit", () => {
     await token.deployed()
 
     await token.mint(initialHolder.address, initialSupply)
+    await token
+      .connect(initialHolder)
+      .transfer(secondHolder.address, initialSupply.sub(initialHolderBalance))
   })
 
   it("should have a name", async () => {
@@ -96,7 +101,7 @@ describe("ERC20WithPermit", () => {
     context("when the requested account has some tokens", () => {
       it("should return the total amount of tokens", async () => {
         expect(await token.balanceOf(initialHolder.address)).to.equal(
-          initialSupply
+          initialHolderBalance
         )
       })
     })
@@ -105,7 +110,7 @@ describe("ERC20WithPermit", () => {
   describe("transfer", () => {
     context("when the recipient is not the zero address", () => {
       context("when the sender does not have enough balance", () => {
-        const amount = initialSupply.add(1)
+        const amount = initialHolderBalance.add(1)
 
         it("should revert", async () => {
           await expect(
@@ -115,7 +120,7 @@ describe("ERC20WithPermit", () => {
       })
 
       context("when the sender transfers all balance", () => {
-        const amount = initialSupply
+        const amount = initialHolderBalance
 
         it("should transfer the requested amount", async () => {
           await token.connect(initialHolder).transfer(recipient.address, amount)
@@ -143,7 +148,7 @@ describe("ERC20WithPermit", () => {
           await token.connect(initialHolder).transfer(recipient.address, amount)
 
           expect(await token.balanceOf(initialHolder.address)).to.equal(
-            initialSupply
+            initialHolderBalance
           )
 
           expect(await token.balanceOf(recipient.address)).to.equal(0)
@@ -164,7 +169,9 @@ describe("ERC20WithPermit", () => {
     context("when the recipient is the zero address", () => {
       it("should revert", async () => {
         await expect(
-          token.connect(initialHolder).transfer(ZERO_ADDRESS, initialSupply)
+          token
+            .connect(initialHolder)
+            .transfer(ZERO_ADDRESS, initialHolderBalance)
         ).to.be.revertedWith("Transfer to the zero address")
       })
     })
@@ -174,7 +181,8 @@ describe("ERC20WithPermit", () => {
     context("when the token owner is not the zero address", () => {
       context("when the recipient is not the zero address", () => {
         context("when the spender has enough approved balance", () => {
-          const allowance = initialSupply
+          const allowance = to1e18(90)
+
           beforeEach(async function () {
             await token
               .connect(initialHolder)
@@ -182,7 +190,7 @@ describe("ERC20WithPermit", () => {
           })
 
           context("when the token owner has enough balance", () => {
-            const amount = initialSupply
+            const amount = initialHolderBalance
 
             it("should transfer the requested amount", async () => {
               await token
@@ -204,7 +212,7 @@ describe("ERC20WithPermit", () => {
                   initialHolder.address,
                   anotherAccount.address
                 )
-              ).to.equal(0)
+              ).to.equal(allowance.sub(amount))
             })
 
             it("should emit a transfer event", async () => {
@@ -233,7 +241,7 @@ describe("ERC20WithPermit", () => {
           })
 
           context("when the token owner does not have enough balance", () => {
-            const amount = initialSupply
+            const amount = initialHolderBalance
 
             beforeEach(async () => {
               await token
@@ -258,7 +266,7 @@ describe("ERC20WithPermit", () => {
         context(
           "when the spender does not have enough approved balance",
           () => {
-            const allowance = initialSupply.sub(1)
+            const allowance = initialHolderBalance.sub(1)
 
             beforeEach(async () => {
               await token
@@ -267,7 +275,7 @@ describe("ERC20WithPermit", () => {
             })
 
             context("when the token owner has enough balance", () => {
-              const amount = initialSupply
+              const amount = initialHolderBalance
 
               it("should revert", async () => {
                 await expect(
@@ -283,7 +291,7 @@ describe("ERC20WithPermit", () => {
             })
 
             context("when the token owner does not have enough balance", () => {
-              const amount = initialSupply
+              const amount = initialHolderBalance
 
               beforeEach(async () => {
                 await token
@@ -305,13 +313,13 @@ describe("ERC20WithPermit", () => {
             })
 
             context("when the token owner is the zero address", () => {
-              const allowance = initialSupply
+              const amount = initialHolderBalance
 
               it("should revert", async () => {
                 await expect(
                   token
                     .connect(anotherAccount)
-                    .transferFrom(ZERO_ADDRESS, recipient.address, allowance)
+                    .transferFrom(ZERO_ADDRESS, recipient.address, amount)
                 ).to.be.revertedWith("Transfer amount exceeds allowance")
               })
             })
@@ -320,7 +328,7 @@ describe("ERC20WithPermit", () => {
       })
 
       context("when the recipient is the zero address", () => {
-        const allowance = initialSupply
+        const allowance = initialHolderBalance
 
         beforeEach(async () => {
           await token
@@ -339,6 +347,7 @@ describe("ERC20WithPermit", () => {
 
       context("when given the maximum allowance", () => {
         const allowance = MAX_UINT256
+        const amount = to1e18(40)
 
         beforeEach(async () => {
           await token
@@ -353,7 +362,7 @@ describe("ERC20WithPermit", () => {
 
           await token
             .connect(anotherAccount)
-            .transferFrom(initialHolder.address, recipient.address, to1e18(100))
+            .transferFrom(initialHolder.address, recipient.address, amount)
 
           expect(
             await token.allowance(initialHolder.address, anotherAccount.address)
@@ -366,7 +375,7 @@ describe("ERC20WithPermit", () => {
   describe("approve", () => {
     context("when the spender is not the zero address", () => {
       context("when the sender has enough balance", () => {
-        const allowance = initialSupply
+        const allowance = initialHolderBalance
 
         it("should emit an approval event", async () => {
           const tx = await token
@@ -417,7 +426,7 @@ describe("ERC20WithPermit", () => {
       })
 
       context("when the sender does not have enough balance", () => {
-        const allowance = initialSupply.add(1)
+        const allowance = initialHolderBalance.add(1)
 
         it("should emit an approval event", async () => {
           const tx = await token
@@ -467,10 +476,10 @@ describe("ERC20WithPermit", () => {
     })
 
     context("when the spender is the zero address", () => {
-      const allowance = initialSupply
+      const amount = initialHolderBalance
       it("should revert", async () => {
         await expect(
-          token.connect(initialHolder).approve(ZERO_ADDRESS, allowance)
+          token.connect(initialHolder).approve(ZERO_ADDRESS, amount)
         ).to.be.revertedWith("Approve to the zero address")
       })
     })
@@ -518,7 +527,7 @@ describe("ERC20WithPermit", () => {
   describe("burn", () => {
     it("should reject burning more than balance", async () => {
       await expect(
-        token.connect(initialHolder).burn(initialSupply.add(1))
+        token.connect(initialHolder).burn(initialHolderBalance.add(1))
       ).to.be.revertedWith("Burn amount exceeds balance")
     })
 
@@ -535,7 +544,7 @@ describe("ERC20WithPermit", () => {
         })
 
         it("should decrement owner's balance", async () => {
-          const expectedBalance = initialSupply.sub(amount)
+          const expectedBalance = initialHolderBalance.sub(amount)
           expect(await token.balanceOf(initialHolder.address)).to.equal(
             expectedBalance
           )
@@ -549,30 +558,30 @@ describe("ERC20WithPermit", () => {
       })
     }
 
-    describeBurn("for entire balance", initialSupply)
-    describeBurn("for less amount than balance", initialSupply.sub(1))
+    describeBurn("for entire balance", initialHolderBalance)
+    describeBurn("for less amount than balance", initialHolderBalance.sub(1))
   })
 
   describe("burnFrom", () => {
     it("should reject burning more than balance", async () => {
       await token
         .connect(initialHolder)
-        .approve(anotherAccount.address, initialSupply.add(1))
+        .approve(anotherAccount.address, initialHolderBalance.add(1))
       await expect(
         token
           .connect(anotherAccount)
-          .burnFrom(initialHolder.address, initialSupply.add(1))
+          .burnFrom(initialHolder.address, initialHolderBalance.add(1))
       ).to.be.revertedWith("Burn amount exceeds balance")
     })
 
     it("should reject burning more than the allowance", async () => {
       await token
         .connect(initialHolder)
-        .approve(anotherAccount.address, initialSupply.sub(1))
+        .approve(anotherAccount.address, initialHolderBalance.sub(1))
       await expect(
         token
           .connect(anotherAccount)
-          .burnFrom(initialHolder.address, initialSupply)
+          .burnFrom(initialHolder.address, initialHolderBalance)
       ).to.be.revertedWith("Burn amount exceeds allowance")
     })
 
@@ -594,7 +603,7 @@ describe("ERC20WithPermit", () => {
         })
 
         it("should decrement owner's balance", async () => {
-          const expectedBalance = initialSupply.sub(amount)
+          const expectedBalance = initialHolderBalance.sub(amount)
           expect(await token.balanceOf(initialHolder.address)).to.equal(
             expectedBalance
           )
@@ -617,8 +626,11 @@ describe("ERC20WithPermit", () => {
       })
     }
 
-    describeBurnFrom("for entire balance", initialSupply)
-    describeBurnFrom("for less amount than balance", initialSupply.sub(1))
+    describeBurnFrom("for entire balance", initialHolderBalance)
+    describeBurnFrom(
+      "for less amount than balance",
+      initialHolderBalance.sub(1)
+    )
 
     context("when given the maximum allowance", () => {
       const allowance = MAX_UINT256
@@ -636,7 +648,7 @@ describe("ERC20WithPermit", () => {
 
         await token
           .connect(anotherAccount)
-          .burnFrom(initialHolder.address, initialSupply)
+          .burnFrom(initialHolder.address, initialHolderBalance)
 
         expect(
           await token.allowance(initialHolder.address, anotherAccount.address)
