@@ -23,15 +23,16 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-// Implementation of [EIP-1167] based on [clone-factory]
-// source code.
-//
-// EIP 1167: https://eips.ethereum.org/EIPS/eip-1167
-// clone-factory: https://github.com/optionality/clone-factory
-// Modified to use ^0.8.5; instead of ^0.4.23 solidity version
-
+/// @notice Implementation of [EIP-1167] based on [clone-factory]
+/// source code.
+///
+/// EIP 1167: https://eips.ethereum.org/EIPS/eip-1167
+// Original implementation: https://github.com/optionality/clone-factory
+// Modified to use ^0.8.5; instead of ^0.4.23 solidity version.
 /* solhint-disable no-inline-assembly */
 abstract contract CloneFactory {
+    /// @notice Creates EIP-1167 clone of the contract under the provided
+    ///         `target` address. Returns address of the created clone.
     function createClone(address target) internal returns (address result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
@@ -49,7 +50,8 @@ abstract contract CloneFactory {
         }
     }
 
-    // slither-disable-next-line dead-code
+    /// @notice Checks if the contract under the `query` address is a EIP-1167
+    ///         clone of the contract under `target` address.
     function isClone(address target, address query)
         internal
         view
