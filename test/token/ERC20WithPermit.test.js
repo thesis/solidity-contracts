@@ -913,7 +913,7 @@ describe("ERC20WithPermit", () => {
         const deadline = yesterday
         const signature = await getApproval(
           permittingHolderBalance,
-          anotherAccount.address,
+          recipient.address,
           deadline
         )
 
@@ -922,7 +922,7 @@ describe("ERC20WithPermit", () => {
             .connect(anotherAccount)
             .permit(
               permittingHolder.address,
-              anotherAccount.address,
+              recipient.address,
               permittingHolderBalance,
               deadline,
               signature.v,
@@ -963,7 +963,7 @@ describe("ERC20WithPermit", () => {
           const deadline = tomorrow
           const signature = await getApproval(
             allowance,
-            anotherAccount.address,
+            recipient.address,
             deadline
           )
 
@@ -971,7 +971,7 @@ describe("ERC20WithPermit", () => {
             .connect(anotherAccount)
             .permit(
               permittingHolder.address,
-              anotherAccount.address,
+              recipient.address,
               allowance,
               deadline,
               signature.v,
@@ -981,11 +981,7 @@ describe("ERC20WithPermit", () => {
 
           await expect(tx)
             .to.emit(token, "Approval")
-            .withArgs(
-              permittingHolder.address,
-              anotherAccount.address,
-              allowance
-            )
+            .withArgs(permittingHolder.address, recipient.address, allowance)
         })
 
         context("when there was no approved amount before", () => {
@@ -993,7 +989,7 @@ describe("ERC20WithPermit", () => {
             const deadline = tomorrow
             const signature = await getApproval(
               allowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1001,7 +997,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 allowance,
                 deadline,
                 signature.v,
@@ -1010,10 +1006,7 @@ describe("ERC20WithPermit", () => {
               )
 
             expect(
-              await token.allowance(
-                permittingHolder.address,
-                anotherAccount.address
-              )
+              await token.allowance(permittingHolder.address, recipient.address)
             ).to.equal(allowance)
           })
         })
@@ -1024,7 +1017,7 @@ describe("ERC20WithPermit", () => {
             const initialAllowance = allowance.sub(10)
             const signature = await getApproval(
               initialAllowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1032,7 +1025,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 initialAllowance,
                 deadline,
                 signature.v,
@@ -1045,7 +1038,7 @@ describe("ERC20WithPermit", () => {
             const deadline = tomorrow
             const signature = await getApproval(
               allowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1053,7 +1046,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 allowance,
                 deadline,
                 signature.v,
@@ -1062,10 +1055,7 @@ describe("ERC20WithPermit", () => {
               )
 
             expect(
-              await token.allowance(
-                permittingHolder.address,
-                anotherAccount.address
-              )
+              await token.allowance(permittingHolder.address, recipient.address)
             ).to.equal(allowance)
           })
         })
@@ -1077,7 +1067,7 @@ describe("ERC20WithPermit", () => {
           const deadline = tomorrow
           const signature = await getApproval(
             allowance,
-            anotherAccount.address,
+            recipient.address,
             deadline
           )
 
@@ -1085,7 +1075,7 @@ describe("ERC20WithPermit", () => {
             .connect(anotherAccount)
             .permit(
               permittingHolder.address,
-              anotherAccount.address,
+              recipient.address,
               allowance,
               deadline,
               signature.v,
@@ -1095,11 +1085,7 @@ describe("ERC20WithPermit", () => {
 
           await expect(tx)
             .to.emit(token, "Approval")
-            .withArgs(
-              permittingHolder.address,
-              anotherAccount.address,
-              allowance
-            )
+            .withArgs(permittingHolder.address, recipient.address, allowance)
         })
 
         context("when there was no approved amount before", () => {
@@ -1107,7 +1093,7 @@ describe("ERC20WithPermit", () => {
             const deadline = tomorrow
             const signature = await getApproval(
               allowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1115,7 +1101,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 allowance,
                 deadline,
                 signature.v,
@@ -1124,10 +1110,7 @@ describe("ERC20WithPermit", () => {
               )
 
             expect(
-              await token.allowance(
-                permittingHolder.address,
-                anotherAccount.address
-              )
+              await token.allowance(permittingHolder.address, recipient.address)
             ).to.equal(allowance)
           })
         })
@@ -1138,7 +1121,7 @@ describe("ERC20WithPermit", () => {
             const initialAllowance = allowance.sub(10)
             const signature = await getApproval(
               initialAllowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1146,7 +1129,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 initialAllowance,
                 deadline,
                 signature.v,
@@ -1159,7 +1142,7 @@ describe("ERC20WithPermit", () => {
             const deadline = tomorrow
             const signature = await getApproval(
               allowance,
-              anotherAccount.address,
+              recipient.address,
               deadline
             )
 
@@ -1167,7 +1150,7 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .permit(
                 permittingHolder.address,
-                anotherAccount.address,
+                recipient.address,
                 allowance,
                 deadline,
                 signature.v,
@@ -1176,10 +1159,7 @@ describe("ERC20WithPermit", () => {
               )
 
             expect(
-              await token.allowance(
-                permittingHolder.address,
-                anotherAccount.address
-              )
+              await token.allowance(permittingHolder.address, recipient.address)
             ).to.equal(allowance)
           })
         })
@@ -1215,7 +1195,7 @@ describe("ERC20WithPermit", () => {
       it("should be accepted at any moment", async () => {
         const signature = await getApproval(
           allowance,
-          anotherAccount.address,
+          recipient.address,
           deadline
         )
 
@@ -1225,7 +1205,7 @@ describe("ERC20WithPermit", () => {
           .connect(anotherAccount)
           .permit(
             permittingHolder.address,
-            anotherAccount.address,
+            recipient.address,
             allowance,
             deadline,
             signature.v,
@@ -1234,10 +1214,7 @@ describe("ERC20WithPermit", () => {
           )
 
         expect(
-          await token.allowance(
-            permittingHolder.address,
-            anotherAccount.address
-          )
+          await token.allowance(permittingHolder.address, recipient.address)
         ).to.equal(allowance)
       })
     })
