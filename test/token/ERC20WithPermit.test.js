@@ -7,6 +7,9 @@ const {
   ZERO_ADDRESS,
 } = require("../helpers/contract-test-helpers")
 
+const { waffle } = require("hardhat")
+const { loadFixture } = waffle
+
 describe("ERC20WithPermit", () => {
   // default Hardhat's networks blockchain, see https://hardhat.org/config/
   const hardhatNetworkId = 31337
@@ -22,18 +25,26 @@ describe("ERC20WithPermit", () => {
 
   let token
 
-  beforeEach(async () => {
+  before("load accounts", async () => {
     ;[owner, initialHolder, secondHolder, recipient, anotherAccount] =
       await ethers.getSigners()
+  })
 
+  async function fixture() {
     const ERC20WithPermit = await ethers.getContractFactory("ERC20WithPermit")
-    token = await ERC20WithPermit.deploy("My Token", "MT")
+    const token = await ERC20WithPermit.deploy("My Token", "MT")
     await token.deployed()
 
     await token.mint(initialHolder.address, initialSupply)
     await token
       .connect(initialHolder)
       .transfer(secondHolder.address, initialSupply.sub(initialHolderBalance))
+
+    return token
+  }
+
+  beforeEach(async () => {
+    token = await loadFixture(fixture)
   })
 
   it("should have a name", async () => {
