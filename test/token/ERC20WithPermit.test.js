@@ -49,7 +49,7 @@ describe("ERC20WithPermit", () => {
     })
   })
 
-  describe("permit_typehash", () => {
+  describe("PERMIT_TYPEHASH", () => {
     it("should be keccak256 of EIP2612 Permit message", async () => {
       const expected = ethers.utils.keccak256(
         ethers.utils.toUtf8Bytes(
@@ -60,7 +60,7 @@ describe("ERC20WithPermit", () => {
     })
   })
 
-  describe("domain_separator", () => {
+  describe("DOMAIN_SEPARATOR", () => {
     it("should be keccak256 of EIP712 domain struct", async () => {
       const keccak256 = ethers.utils.keccak256
       const defaultAbiCoder = ethers.utils.defaultAbiCoder
