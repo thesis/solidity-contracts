@@ -1,7 +1,9 @@
 const { expect } = require("chai")
 const {
+  increaseTime,
   lastBlockTime,
   to1e18,
+  MAX_UINT256,
   ZERO_ADDRESS,
 } = require("../helpers/contract-test-helpers")
 
@@ -334,6 +336,30 @@ describe("ERC20WithPermit", () => {
           ).to.be.revertedWith("Transfer to the zero address")
         })
       })
+
+      context("when given the maximum allowance", () => {
+        const allowance = MAX_UINT256
+
+        beforeEach(async () => {
+          await token
+            .connect(initialHolder)
+            .approve(anotherAccount.address, allowance)
+        })
+
+        it("should not reduce approved amount", async () => {
+          expect(
+            await token.allowance(initialHolder.address, anotherAccount.address)
+          ).to.equal(allowance)
+
+          await token
+            .connect(anotherAccount)
+            .transferFrom(initialHolder.address, recipient.address, to1e18(100))
+
+          expect(
+            await token.allowance(initialHolder.address, anotherAccount.address)
+          ).to.equal(allowance)
+        })
+      })
     })
   })
 
@@ -593,6 +619,30 @@ describe("ERC20WithPermit", () => {
 
     describeBurnFrom("for entire balance", initialSupply)
     describeBurnFrom("for less amount than balance", initialSupply.sub(1))
+
+    context("when given the maximum allowance", () => {
+      const allowance = MAX_UINT256
+
+      beforeEach(async () => {
+        await token
+          .connect(initialHolder)
+          .approve(anotherAccount.address, allowance)
+      })
+
+      it("should not reduce approved amount", async () => {
+        expect(
+          await token.allowance(initialHolder.address, anotherAccount.address)
+        ).to.equal(allowance)
+
+        await token
+          .connect(anotherAccount)
+          .burnFrom(initialHolder.address, initialSupply)
+
+        expect(
+          await token.allowance(initialHolder.address, anotherAccount.address)
+        ).to.equal(allowance)
+      })
+    })
   })
 
   describe("permit", () => {
@@ -963,18 +1013,17 @@ describe("ERC20WithPermit", () => {
     })
 
     context("when given never expiring permit", () => {
-      // uint(-1)
-      const allowance = ethers.BigNumber.from(
-        "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-      )
+      const allowance = permittingHolderBalance
+      const deadline = MAX_UINT256
 
-      beforeEach(async () => {
-        const deadline = tomorrow
+      it("should be accepted at any moment", async () => {
         const signature = await getApproval(
           allowance,
           anotherAccount.address,
           deadline
         )
+
+        await increaseTime(63113904) // +2 years
 
         await token
           .connect(anotherAccount)
@@ -986,22 +1035,6 @@ describe("ERC20WithPermit", () => {
             signature.v,
             signature.r,
             signature.s
-          )
-      })
-      it("should not reduce approved amount", async () => {
-        expect(
-          await token.allowance(
-            permittingHolder.address,
-            anotherAccount.address
-          )
-        ).to.equal(allowance)
-
-        await token
-          .connect(anotherAccount)
-          .transferFrom(
-            permittingHolder.address,
-            recipient.address,
-            to1e18(100)
           )
 
         expect(
