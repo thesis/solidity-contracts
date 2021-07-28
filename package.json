@@ -2,6 +2,10 @@
   "name": "@thesis/solidity-contracts",
   "version": "0.0.1",
   "license": "MIT",
+  "files": [
+    "contracts/",
+    "helpers/"
+  ],
   "scripts": {
     "build": "hardhat compile",
     "format": "npm run lint && prettier --check .",

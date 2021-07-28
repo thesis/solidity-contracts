@@ -5,7 +5,7 @@ const {
   to1e18,
   MAX_UINT256,
   ZERO_ADDRESS,
-} = require("../helpers/contract-test-helpers")
+} = require("../../helpers/contract-test-helpers")
 
 const { waffle } = require("hardhat")
 const { loadFixture } = waffle
