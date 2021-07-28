@@ -22,8 +22,8 @@ interface IERC20WithPermit is IERC20, IERC20Metadata, IApproveAndCall {
     ///         from their address. Anyone can submit this signature on the
     ///         user's behalf by calling the permit function, paying gas fees,
     ///         and possibly performing other actions in the same transaction.
-    /// @dev    The deadline argument can be set to uint(-1) to create permits
-    ///         that effectively never expire.
+    /// @dev    The deadline argument can be set to `type(uint256).max to create
+    ///         permits that effectively never expire.
     function permit(
         address owner,
         address spender,

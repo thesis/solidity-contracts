@@ -16,23 +16,38 @@ import "./IReceiveApproval.sol";
 ///         paying gas fees, and possibly performing other actions in the same
 ///         transaction.
 contract ERC20WithPermit is IERC20WithPermit, Ownable {
+    /// @notice The amount of tokens owned by the given account.
     mapping(address => uint256) public override balanceOf;
+
+    /// @notice The remaining number of tokens that spender will be
+    ///         allowed to spend on behalf of owner through `transferFrom` and
+    ///         `burnFrom`. This is zero by default.
     mapping(address => mapping(address => uint256)) public override allowance;
 
+    /// @notice Returns the current nonce for EIP2612 permission for the
+    ///         provided token owner for a replay protection. Used to construct
+    ///         EIP2612 signature provided to `permit` function.
     mapping(address => uint256) public override nonces;
 
     uint256 public immutable cachedChainId;
     bytes32 public immutable cachedDomainSeparator;
 
+    /// @notice Returns EIP2612 Permit message hash. Used to construct EIP2612
+    ///         signature provided to `permit` function.
     // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public constant override PERMIT_TYPEHASH =
         0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
 
+    /// @notice The amount of tokens in existence.
     uint256 public override totalSupply;
 
+    /// @notice The name of the token.
     string public override name;
+
+    /// @notice The symbol of the token.
     string public override symbol;
 
+    /// @notice The decimals places of the token.
     uint8 public constant override decimals = 18;
 
     constructor(string memory _name, string memory _symbol) {
@@ -43,6 +58,11 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         cachedDomainSeparator = buildDomainSeparator();
     }
 
+    /// @notice Moves `amount` tokens from the caller's account to `recipient`.
+    /// @return True if the operation succeeded, reverts otherwise.
+    /// @dev Requirements:
+    ///       - `recipient` cannot be the zero address,
+    ///       - the caller must have a balance of at least `amount`.
     function transfer(address recipient, uint256 amount)
         external
         override
@@ -52,6 +72,15 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return true;
     }
 
+    /// @notice Moves `amount` tokens from `sender` to `recipient` using the
+    ///         allowance mechanism. `amount` is then deducted from the caller's
+    ///         allowance unless the allowance was made for `type(uint256).max`.
+    /// @return True if the operation succeeded, reverts otherwise.
+    /// @dev Requirements:
+    ///      - `sender` and `recipient` cannot be the zero address,
+    ///      - `sender` must have a balance of at least `amount`,
+    ///      - the caller must have allowance for `sender`'s tokens of at least
+    ///        `amount`.
     function transferFrom(
         address sender,
         address recipient,
@@ -69,6 +98,16 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return true;
     }
 
+    /// @notice EIP2612 approval made with secp256k1 signature.
+    ///         Users can authorize a transfer of their tokens with a signature
+    ///         conforming EIP712 standard, rather than an on-chain transaction
+    ///         from their address. Anyone can submit this signature on the
+    ///         user's behalf by calling the permit function, paying gas fees,
+    ///         and possibly performing other actions in the same transaction.
+    /// @dev    The deadline argument can be set to `type(uint256).max to create
+    ///         permits that effectively never expire.  If the `amount` is set
+    ///         to `type(uint256).max` then `transferFrom` and `burnFrom` will
+    ///         not reduce an allowance.
     function permit(
         address owner,
         address spender,
@@ -115,6 +154,10 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         _approve(owner, spender, amount);
     }
 
+    /// @notice Creates `amount` tokens and assigns them to `account`,
+    ///         increasing the total supply.
+    /// @dev Requirements:
+    ///      - `recipient` cannot be the zero address.
     function mint(address recipient, uint256 amount) external onlyOwner {
         require(recipient != address(0), "Mint to the zero address");
         totalSupply += amount;
@@ -122,10 +165,20 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         emit Transfer(address(0), recipient, amount);
     }
 
+    /// @notice Destroys `amount` tokens from the caller.
+    /// @dev Requirements:
+    ///       - the caller must have a balance of at least `amount`.
     function burn(uint256 amount) external override {
         _burn(msg.sender, amount);
     }
 
+    /// @notice Destroys `amount` of tokens from `account` using the allowance
+    ///         mechanism. `amount` is then deducted from the caller's allowance
+    ///         unless the allowance was made for `type(uint256).max`.
+    /// @dev Requirements:
+    ///      - `account` must have a balance of at least `amount`,
+    ///      - the caller must have allowance for `account`'s tokens of at least
+    ///        `amount`.
     function burnFrom(address account, uint256 amount) external override {
         uint256 currentAllowance = allowance[account][msg.sender];
         if (currentAllowance != type(uint256).max) {
@@ -138,15 +191,24 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         _burn(account, amount);
     }
 
+    /// @notice Calls `receiveApproval` function on spender previusly approving
+    ///         the spender to withdraw from the caller multiple times, up to
+    ///         the `amount` amount. If this function is called again, it
+    ///         overwrites the current allowance with `amount`. Reverts if the
+    ///         approval reverted or if `receiveApproval` call on the spender
+    ///         reverted.
+    /// @return True if both approval and `receiveApproval` calls succeeded.
+    /// @dev If the `amount` is set to `type(uint256).max` then
+    ///      `transferFrom` and `burnFrom` will not reduce an allowance.
     function approveAndCall(
         address spender,
-        uint256 value,
+        uint256 amount,
         bytes memory extraData
     ) external override returns (bool) {
-        if (approve(spender, value)) {
+        if (approve(spender, amount)) {
             IReceiveApproval(spender).receiveApproval(
                 msg.sender,
-                value,
+                amount,
                 address(this),
                 extraData
             );
@@ -155,6 +217,17 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return false;
     }
 
+    /// @notice Sets `amount` as the allowance of `spender` over the caller's
+    ///         tokens.
+    /// @return True if the operation succeeded.
+    /// @dev If the `amount` is set to `type(uint256).max` then
+    ///      `transferFrom` and `burnFrom` will not reduce an allowance.
+    ///      Beware that changing an allowance with this method brings the risk
+    ///      that someone may use both the old and the new allowance by
+    ///      unfortunate transaction ordering. One possible solution to mitigate
+    ///      this race condition is to first reduce the spender's allowance to 0
+    ///      and set the desired value afterwards:
+    ///      https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
     function approve(address spender, uint256 amount)
         public
         override
@@ -164,6 +237,10 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return true;
     }
 
+    /// @notice Returns hash of EIP712 Domain struct with the token name as
+    ///         a signing domain and token contract as a verifying contract.
+    ///         Used to construct EIP2612 signature provided to `permit`
+    ///         function.
     /* solhint-disable-next-line func-name-mixedcase */
     function DOMAIN_SEPARATOR() public view override returns (bytes32) {
         // As explained in EIP-2612, if the DOMAIN_SEPARATOR contains the

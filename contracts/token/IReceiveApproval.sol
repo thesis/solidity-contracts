@@ -6,10 +6,10 @@ pragma solidity ^0.8.5;
 ///         `approveAndCall`/`receiveApproval` pattern.
 interface IReceiveApproval {
     /// @notice Receives approval to spend tokens. Called as a result of
-    ///         approveAndCall call on the token.
+    ///         `approveAndCall` call on the token.
     function receiveApproval(
         address from,
-        uint256 value,
+        uint256 amount,
         address token,
         bytes calldata extraData
     ) external;
