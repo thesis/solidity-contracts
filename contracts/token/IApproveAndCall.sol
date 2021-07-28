@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.5;
+pragma solidity ^0.8.4;
 
 /// @notice An interface that should be implemented by tokens supporting
 ///         `approveAndCall`/`receiveApproval` pattern.
