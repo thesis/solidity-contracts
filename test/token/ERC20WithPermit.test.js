@@ -1059,6 +1059,35 @@ describe("ERC20WithPermit", () => {
             .withArgs(permittingHolder.address, recipient.address, allowance)
         })
 
+        it("should increment the nonce for permitting holder", async () => {
+          const deadline = tomorrow
+          const signature = await getApproval(
+            allowance,
+            recipient.address,
+            deadline
+          )
+
+          const initialNonce = await token.nonces(permittingHolder.address)
+
+          await token
+            .connect(anotherAccount)
+            .permit(
+              permittingHolder.address,
+              recipient.address,
+              allowance,
+              deadline,
+              signature.v,
+              signature.r,
+              signature.s
+            )
+
+          expect(await token.nonces(permittingHolder.address)).to.equal(
+            initialNonce.add(1)
+          )
+          expect(await token.nonces(anotherAccount.address)).to.equal(0)
+          expect(await token.nonces(recipient.address)).to.equal(0)
+        })
+
         context("when there was no approved amount before", () => {
           it("should approve the requested amount", async () => {
             const deadline = tomorrow
