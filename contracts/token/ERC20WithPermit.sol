@@ -191,7 +191,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         _burn(account, amount);
     }
 
-    /// @notice Calls `receiveApproval` function on spender previusly approving
+    /// @notice Calls `receiveApproval` function on spender previously approving
     ///         the spender to withdraw from the caller multiple times, up to
     ///         the `amount` amount. If this function is called again, it
     ///         overwrites the current allowance with `amount`. Reverts if the
@@ -246,7 +246,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         // As explained in EIP-2612, if the DOMAIN_SEPARATOR contains the
         // chainId and is defined at contract deployment instead of
         // reconstructed for every signature, there is a risk of possible replay
-        // attacks between chains in the event of a fututre chain split.
+        // attacks between chains in the event of a future chain split.
         // To address this issue, we check the cached chain ID against the
         // current one and in case they are different, we build domain separator
         // from scratch.
