@@ -668,10 +668,13 @@ describe("ERC20WithPermit", () => {
 
   describe("mint", () => {
     const amount = to1e18(50)
-    it("should reject a zero account", async () => {
-      await expect(
-        token.connect(owner).mint(ZERO_ADDRESS, amount)
-      ).to.be.revertedWith("Mint to the zero address")
+
+    context("for a zero account", () => {
+      it("should reject a zero account", async () => {
+        await expect(
+          token.connect(owner).mint(ZERO_ADDRESS, amount)
+        ).to.be.revertedWith("Mint to the zero address")
+      })
     })
 
     context("when called not by the owner", () => {
@@ -688,7 +691,7 @@ describe("ERC20WithPermit", () => {
         mintTx = await token.connect(owner).mint(anotherAccount.address, amount)
       })
 
-      it("should incement totalSupply", async () => {
+      it("should increment totalSupply", async () => {
         const expectedSupply = initialSupply.add(amount)
         expect(await token.totalSupply()).to.equal(expectedSupply)
       })
