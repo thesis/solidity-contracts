@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import "../clone/CloneFactory.sol";
+import "../../clone/CloneFactory.sol";
 
 contract CloneFactoryStub is CloneFactory {
     event CloneCreated(address cloneAddress);
