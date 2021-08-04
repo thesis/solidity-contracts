@@ -2,7 +2,7 @@
 
 pragma solidity ^0.8.4;
 
-import "../token/IReceiveApproval.sol";
+import "../../token/IReceiveApproval.sol";
 
 contract ReceiveApprovalStub is IReceiveApproval {
     bool public shouldRevert;

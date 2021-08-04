@@ -160,6 +160,9 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     ///      - `recipient` cannot be the zero address.
     function mint(address recipient, uint256 amount) external onlyOwner {
         require(recipient != address(0), "Mint to the zero address");
+
+        _beforeTokenTransfer(address(0), recipient, amount);
+
         totalSupply += amount;
         balanceOf[recipient] += amount;
         emit Transfer(address(0), recipient, amount);
@@ -257,9 +260,28 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         }
     }
 
+    /// @dev Hook that is called before any transfer of tokens. This includes
+    ///      minting and burning.
+    ///
+    /// Calling conditions:
+    /// - when `from` and `to` are both non-zero, `amount` of `from`'s tokens
+    ///   will be to transferred to `to`.
+    /// - when `from` is zero, `amount` tokens will be minted for `to`.
+    /// - when `to` is zero, `amount` of ``from``'s tokens will be burned.
+    /// - `from` and `to` are never both zero.
+    // slither-disable-next-line dead-code
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+
     function _burn(address account, uint256 amount) internal {
         uint256 currentBalance = balanceOf[account];
         require(currentBalance >= amount, "Burn amount exceeds balance");
+
+        _beforeTokenTransfer(account, address(0), amount);
+
         balanceOf[account] = currentBalance - amount;
         totalSupply -= amount;
         emit Transfer(account, address(0), amount);
@@ -272,6 +294,9 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     ) private {
         require(sender != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
+
+        _beforeTokenTransfer(sender, recipient, amount);
+
         uint256 senderBalance = balanceOf[sender];
         require(senderBalance >= amount, "Transfer amount exceeds balance");
         balanceOf[sender] = senderBalance - amount;
