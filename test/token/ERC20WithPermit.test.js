@@ -53,7 +53,8 @@ describe("ERC20WithPermit", () => {
 
   describe("PERMIT_TYPEHASH", () => {
     it("should be keccak256 of EIP2612 Permit message", async () => {
-      const expected = "0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9"
+      const expected =
+        "0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9"
       expect(await token.PERMIT_TYPEHASH()).to.equal(expected)
     })
   })
