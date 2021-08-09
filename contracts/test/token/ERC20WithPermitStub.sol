@@ -11,7 +11,7 @@ contract ERC20WithPermitStub is ERC20WithPermit {
         ERC20WithPermit(_name, _symbol)
     {}
 
-    function _beforeTokenTransfer(
+    function beforeTokenTransfer(
         address from,
         address to,
         uint256 amount

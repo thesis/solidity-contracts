@@ -135,7 +135,7 @@ describe("ERC20WithPermit", () => {
             .withArgs(initialHolder.address, recipient.address, amount)
         })
 
-        it("should call _beforeTokenTransfer hook", async () => {
+        it("should call beforeTokenTransfer hook", async () => {
           await expect(tx)
             .to.emit(token, "BeforeTokenTransferCalled")
             .withArgs(initialHolder.address, recipient.address, amount)
@@ -166,7 +166,7 @@ describe("ERC20WithPermit", () => {
             .withArgs(initialHolder.address, recipient.address, amount)
         })
 
-        it("should call _beforeTokenTransfer hook", async () => {
+        it("should call beforeTokenTransfer hook", async () => {
           await expect(tx)
             .to.emit(token, "BeforeTokenTransferCalled")
             .withArgs(initialHolder.address, recipient.address, amount)
@@ -235,7 +235,7 @@ describe("ERC20WithPermit", () => {
                 )
             })
 
-            it("should call _beforeTokenTransfer hook", async () => {
+            it("should call beforeTokenTransfer hook", async () => {
               await expect(tx)
                 .to.emit(token, "BeforeTokenTransferCalled")
                 .withArgs(initialHolder.address, recipient.address, amount)
@@ -524,7 +524,7 @@ describe("ERC20WithPermit", () => {
           .withArgs(ZERO_ADDRESS, anotherAccount.address, amount)
       })
 
-      it("should call _beforeTokenTransfer hook", async () => {
+      it("should call beforeTokenTransfer hook", async () => {
         await expect(mintTx)
           .to.emit(token, "BeforeTokenTransferCalled")
           .withArgs(ZERO_ADDRESS, anotherAccount.address, amount)
@@ -564,7 +564,7 @@ describe("ERC20WithPermit", () => {
             .withArgs(initialHolder.address, ZERO_ADDRESS, amount)
         })
 
-        it("should call _beforeTokenTransfer hook", async () => {
+        it("should call beforeTokenTransfer hook", async () => {
           await expect(burnTx)
             .to.emit(token, "BeforeTokenTransferCalled")
             .withArgs(initialHolder.address, ZERO_ADDRESS, amount)
@@ -638,7 +638,7 @@ describe("ERC20WithPermit", () => {
             .withArgs(initialHolder.address, ZERO_ADDRESS, amount)
         })
 
-        it("should call _beforeTokenTransfer hook", async () => {
+        it("should call beforeTokenTransfer hook", async () => {
           await expect(burnTx)
             .to.emit(token, "BeforeTokenTransferCalled")
             .withArgs(initialHolder.address, ZERO_ADDRESS, amount)
