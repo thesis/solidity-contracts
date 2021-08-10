@@ -181,6 +181,14 @@ describe("ERC20WithPermit", () => {
         ).to.be.revertedWith("Transfer to the zero address")
       })
     })
+
+    context("when the recipient is the token address", () => {
+      it("should revert", async () => {
+        await expect(
+          token.connect(initialHolder).transfer(token.address, initialSupply)
+        ).to.be.revertedWith("Transfer to the token address")
+      })
+    })
   })
 
   describe("transferFrom", () => {
@@ -344,6 +352,24 @@ describe("ERC20WithPermit", () => {
               .connect(anotherAccount)
               .transferFrom(initialHolder.address, ZERO_ADDRESS, allowance)
           ).to.be.revertedWith("Transfer to the zero address")
+        })
+      })
+
+      context("when the recipient is the token address", () => {
+        const allowance = initialSupply
+
+        beforeEach(async () => {
+          await token
+            .connect(initialHolder)
+            .approve(anotherAccount.address, allowance)
+        })
+
+        it("should revert", async () => {
+          await expect(
+            token
+              .connect(anotherAccount)
+              .transferFrom(initialHolder.address, token.address, allowance)
+          ).to.be.revertedWith("Transfer to the token address")
         })
       })
 
