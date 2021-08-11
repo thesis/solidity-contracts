@@ -295,6 +295,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     ) private {
         require(sender != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
+        require(recipient != address(this), "Transfer to the token address");
 
         beforeTokenTransfer(sender, recipient, amount);
 
