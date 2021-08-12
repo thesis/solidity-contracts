@@ -55,7 +55,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         name = _name;
         symbol = _symbol;
 
-        cachedChainId = chainId();
+        cachedChainId = block.chainid;
         cachedDomainSeparator = buildDomainSeparator();
     }
 
@@ -254,7 +254,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         // To address this issue, we check the cached chain ID against the
         // current one and in case they are different, we build domain separator
         // from scratch.
-        if (chainId() == cachedChainId) {
+        if (block.chainid == cachedChainId) {
             return cachedDomainSeparator;
         } else {
             return buildDomainSeparator();
@@ -326,16 +326,9 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
                     ),
                     keccak256(bytes(name)),
                     keccak256(bytes("1")),
-                    chainId(),
+                    block.chainid,
                     address(this)
                 )
             );
-    }
-
-    function chainId() private view returns (uint256 id) {
-        /* solhint-disable-next-line no-inline-assembly */
-        assembly {
-            id := chainid()
-        }
     }
 }
