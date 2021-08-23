@@ -33,6 +33,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 abstract contract CloneFactory {
     /// @notice Creates EIP-1167 clone of the contract under the provided
     ///         `target` address. Returns address of the created clone.
+    /// @dev In specific circumstances, such as the `target` contract destroyed,
+    ///      create opcode may return 0x0 address. The code calling this
+    ///      function should handle this corner case properly.
     function createClone(address target) internal returns (address result) {
         bytes20 targetBytes = bytes20(target);
         assembly {
