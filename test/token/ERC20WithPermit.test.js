@@ -729,7 +729,7 @@ describe("ERC20WithPermit", () => {
 
       const domainSeparator = await token.DOMAIN_SEPARATOR()
       const permitTypehash = await token.PERMIT_TYPEHASH()
-      const nonce = await token.nonces(permittingHolder.address)
+      const nonce = await token.nonce(permittingHolder.address)
 
       const approvalDigest = ethers.utils.keccak256(
         ethers.utils.solidityPack(

@@ -27,7 +27,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     /// @notice Returns the current nonce for EIP2612 permission for the
     ///         provided token owner for a replay protection. Used to construct
     ///         EIP2612 signature provided to `permit` function.
-    mapping(address => uint256) public override nonces;
+    mapping(address => uint256) public override nonce;
 
     uint256 public immutable cachedChainId;
     bytes32 public immutable cachedDomainSeparator;
@@ -141,7 +141,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
                         owner,
                         spender,
                         amount,
-                        nonces[owner]++,
+                        nonce[owner]++,
                         deadline
                     )
                 )
