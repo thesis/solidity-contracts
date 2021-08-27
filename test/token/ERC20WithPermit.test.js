@@ -103,7 +103,7 @@ describe("ERC20WithPermit", () => {
 
   describe("transfer", () => {
     context("when the recipient is not the zero address", () => {
-      context("when the sender does not have enough balance", () => {
+      context("when the spender does not have enough balance", () => {
         const amount = initialSupply.add(1)
 
         it("should revert", async () => {
@@ -113,7 +113,7 @@ describe("ERC20WithPermit", () => {
         })
       })
 
-      context("when the sender transfers all balance", () => {
+      context("when the spender transfers all balance", () => {
         const amount = initialSupply
 
         let tx
@@ -142,7 +142,7 @@ describe("ERC20WithPermit", () => {
         })
       })
 
-      context("when the sender transfers zero tokens", () => {
+      context("when the spender transfers zero tokens", () => {
         const amount = ethers.BigNumber.from(0)
 
         let tx
@@ -401,7 +401,7 @@ describe("ERC20WithPermit", () => {
 
   describe("approve", () => {
     context("when the spender is not the zero address", () => {
-      context("when the sender has enough balance", () => {
+      context("when the spender has enough balance", () => {
         const allowance = initialSupply
 
         it("should emit an approval event", async () => {
@@ -452,7 +452,7 @@ describe("ERC20WithPermit", () => {
         })
       })
 
-      context("when the sender does not have enough balance", () => {
+      context("when the spender does not have enough balance", () => {
         const allowance = initialSupply.add(1)
 
         it("should emit an approval event", async () => {
@@ -816,7 +816,7 @@ describe("ERC20WithPermit", () => {
     })
 
     context("when the spender is not the zero address", () => {
-      context("when the sender has enough balance", () => {
+      context("when the spender has enough balance", () => {
         const allowance = permittingHolderBalance
         it("should emit an approval event", async () => {
           const deadline = tomorrow
@@ -930,7 +930,7 @@ describe("ERC20WithPermit", () => {
         })
       })
 
-      context("when the sender does not have enough balance", () => {
+      context("when the spender does not have enough balance", () => {
         const allowance = permittingHolderBalance.add(1)
         it("should emit an approval event", async () => {
           const deadline = tomorrow
