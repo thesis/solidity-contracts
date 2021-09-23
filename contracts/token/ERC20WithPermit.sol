@@ -27,16 +27,17 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     /// @notice Returns the current nonce for EIP2612 permission for the
     ///         provided token owner for a replay protection. Used to construct
     ///         EIP2612 signature provided to `permit` function.
-    mapping(address => uint256) public override nonces;
+    mapping(address => uint256) public override nonce;
 
     uint256 public immutable cachedChainId;
     bytes32 public immutable cachedDomainSeparator;
 
     /// @notice Returns EIP2612 Permit message hash. Used to construct EIP2612
     ///         signature provided to `permit` function.
-    // keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
     bytes32 public constant override PERMIT_TYPEHASH =
-        0x6e71edae12b1b97f4d1f60370fef10105fa2faae0126114a169c64845d6126c9;
+        keccak256(
+            "Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)"
+        );
 
     /// @notice The amount of tokens in existence.
     uint256 public override totalSupply;
@@ -54,7 +55,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         name = _name;
         symbol = _symbol;
 
-        cachedChainId = chainId();
+        cachedChainId = block.chainid;
         cachedDomainSeparator = buildDomainSeparator();
     }
 
@@ -72,29 +73,29 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return true;
     }
 
-    /// @notice Moves `amount` tokens from `sender` to `recipient` using the
+    /// @notice Moves `amount` tokens from `spender` to `recipient` using the
     ///         allowance mechanism. `amount` is then deducted from the caller's
     ///         allowance unless the allowance was made for `type(uint256).max`.
     /// @return True if the operation succeeded, reverts otherwise.
     /// @dev Requirements:
-    ///      - `sender` and `recipient` cannot be the zero address,
-    ///      - `sender` must have a balance of at least `amount`,
-    ///      - the caller must have allowance for `sender`'s tokens of at least
+    ///      - `spender` and `recipient` cannot be the zero address,
+    ///      - `spender` must have a balance of at least `amount`,
+    ///      - the caller must have allowance for `spender`'s tokens of at least
     ///        `amount`.
     function transferFrom(
-        address sender,
+        address spender,
         address recipient,
         uint256 amount
     ) external override returns (bool) {
-        uint256 currentAllowance = allowance[sender][msg.sender];
+        uint256 currentAllowance = allowance[spender][msg.sender];
         if (currentAllowance != type(uint256).max) {
             require(
                 currentAllowance >= amount,
                 "Transfer amount exceeds allowance"
             );
-            _approve(sender, msg.sender, currentAllowance - amount);
+            _approve(spender, msg.sender, currentAllowance - amount);
         }
-        _transfer(sender, recipient, amount);
+        _transfer(spender, recipient, amount);
         return true;
     }
 
@@ -140,7 +141,7 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
                         owner,
                         spender,
                         amount,
-                        nonces[owner]++,
+                        nonce[owner]++,
                         deadline
                     )
                 )
@@ -160,6 +161,9 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     ///      - `recipient` cannot be the zero address.
     function mint(address recipient, uint256 amount) external onlyOwner {
         require(recipient != address(0), "Mint to the zero address");
+
+        beforeTokenTransfer(address(0), recipient, amount);
+
         totalSupply += amount;
         balanceOf[recipient] += amount;
         emit Transfer(address(0), recipient, amount);
@@ -250,33 +254,56 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         // To address this issue, we check the cached chain ID against the
         // current one and in case they are different, we build domain separator
         // from scratch.
-        if (chainId() == cachedChainId) {
+        if (block.chainid == cachedChainId) {
             return cachedDomainSeparator;
         } else {
             return buildDomainSeparator();
         }
     }
 
+    /// @dev Hook that is called before any transfer of tokens. This includes
+    ///      minting and burning.
+    ///
+    /// Calling conditions:
+    /// - when `from` and `to` are both non-zero, `amount` of `from`'s tokens
+    ///   will be to transferred to `to`.
+    /// - when `from` is zero, `amount` tokens will be minted for `to`.
+    /// - when `to` is zero, `amount` of ``from``'s tokens will be burned.
+    /// - `from` and `to` are never both zero.
+    // slither-disable-next-line dead-code
+    function beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 amount
+    ) internal virtual {}
+
     function _burn(address account, uint256 amount) internal {
         uint256 currentBalance = balanceOf[account];
         require(currentBalance >= amount, "Burn amount exceeds balance");
+
+        beforeTokenTransfer(account, address(0), amount);
+
         balanceOf[account] = currentBalance - amount;
         totalSupply -= amount;
         emit Transfer(account, address(0), amount);
     }
 
     function _transfer(
-        address sender,
+        address spender,
         address recipient,
         uint256 amount
     ) private {
-        require(sender != address(0), "Transfer from the zero address");
+        require(spender != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
-        uint256 senderBalance = balanceOf[sender];
-        require(senderBalance >= amount, "Transfer amount exceeds balance");
-        balanceOf[sender] = senderBalance - amount;
+        require(recipient != address(this), "Transfer to the token address");
+
+        beforeTokenTransfer(spender, recipient, amount);
+
+        uint256 spenderBalance = balanceOf[spender];
+        require(spenderBalance >= amount, "Transfer amount exceeds balance");
+        balanceOf[spender] = spenderBalance - amount;
         balanceOf[recipient] += amount;
-        emit Transfer(sender, recipient, amount);
+        emit Transfer(spender, recipient, amount);
     }
 
     function _approve(
@@ -299,16 +326,9 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
                     ),
                     keccak256(bytes(name)),
                     keccak256(bytes("1")),
-                    chainId(),
+                    block.chainid,
                     address(this)
                 )
             );
-    }
-
-    function chainId() private view returns (uint256 id) {
-        /* solhint-disable-next-line no-inline-assembly */
-        assembly {
-            id := chainid()
-        }
     }
 }
