@@ -137,9 +137,15 @@ describe("ERC20WithPermit", () => {
       context("when the sender transfers part of their tokens", () => {
         const amount = to1e18(60)
 
-        it("should transfer the requested amount", async () => {
-          await token.connect(initialHolder).transfer(recipient.address, amount)
+        let tx
 
+        beforeEach(async () => {
+          tx = await token
+            .connect(initialHolder)
+            .transfer(recipient.address, amount)
+        })
+
+        it("should transfer the requested amount", async () => {
           expect(await token.balanceOf(initialHolder.address)).to.equal(
             initialHolderBalance.sub(amount)
           )
@@ -148,10 +154,6 @@ describe("ERC20WithPermit", () => {
         })
 
         it("should emit a transfer event", async () => {
-          const tx = await token
-            .connect(initialHolder)
-            .transfer(recipient.address, amount)
-
           await expect(tx)
             .to.emit(token, "Transfer")
             .withArgs(initialHolder.address, recipient.address, amount)
@@ -365,15 +367,17 @@ describe("ERC20WithPermit", () => {
             context("when the sender transfers all balance", () => {
               const amount = initialHolderBalance
 
-              it("should transfer the requested amount", async () => {
-                await token
+              beforeEach(async () => {
+                tx = await token
                   .connect(anotherAccount)
                   .transferFrom(
                     initialHolder.address,
                     recipient.address,
                     amount
                   )
+              })
 
+              it("should transfer the requested amount", async () => {
                 expect(await token.balanceOf(initialHolder.address)).to.equal(0)
 
                 expect(await token.balanceOf(recipient.address)).to.equal(
@@ -382,14 +386,6 @@ describe("ERC20WithPermit", () => {
               })
 
               it("should decrease the spender allowance", async () => {
-                await token
-                  .connect(anotherAccount)
-                  .transferFrom(
-                    initialHolder.address,
-                    recipient.address,
-                    amount
-                  )
-
                 expect(
                   await token.allowance(
                     initialHolder.address,
@@ -399,28 +395,12 @@ describe("ERC20WithPermit", () => {
               })
 
               it("should emit a transfer event", async () => {
-                const tx = await token
-                  .connect(anotherAccount)
-                  .transferFrom(
-                    initialHolder.address,
-                    recipient.address,
-                    amount
-                  )
-
                 await expect(tx)
                   .to.emit(token, "Transfer")
                   .withArgs(initialHolder.address, recipient.address, amount)
               })
 
               it("should emit an approval event", async () => {
-                const tx = await token
-                  .connect(anotherAccount)
-                  .transferFrom(
-                    initialHolder.address,
-                    recipient.address,
-                    amount
-                  )
-
                 await expect(tx)
                   .to.emit(token, "Approval")
                   .withArgs(
