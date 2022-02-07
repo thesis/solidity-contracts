@@ -1,6 +1,6 @@
 {
   "name": "@thesis-co/solidity-contracts",
-  "version": "0.0.1-dev",
+  "version": "0.0.1-pre",
   "license": "MIT",
   "files": [
     "contracts/**/*.sol"
