@@ -7,7 +7,7 @@ on:
     paths:
       - "contracts/**"
       - "package.json"
-      - "yarn.json"
+      - "yarn.lock"
   workflow_dispatch:
 
 jobs:
