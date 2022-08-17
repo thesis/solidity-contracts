@@ -1,7 +1,18 @@
 {
-  "name": "@thesis/solidity-contracts",
-  "version": "0.0.1",
+  "name": "@thesis-co/solidity-contracts",
+  "version": "0.0.1-pre",
   "license": "MIT",
+  "files": [
+    "contracts/**/*.sol"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "ssh://git@github.com/thesis/solidity-contracts"
+  },
+  "bugs": {
+    "url": "https://github.com/thesis/solidity-contracts/issues"
+  },
+  "homepage": "https://github.com/thesis/solidity-contracts",
   "scripts": {
     "build": "hardhat compile",
     "format": "npm run lint && prettier --check .",
