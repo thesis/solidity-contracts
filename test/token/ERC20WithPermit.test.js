@@ -904,7 +904,7 @@ describe("ERC20WithPermit", () => {
 
       const domainSeparator = await token.DOMAIN_SEPARATOR()
       const permitTypehash = await token.PERMIT_TYPEHASH()
-      const nonce = await token.nonce(permittingHolder.address)
+      const nonce = await token.nonces(permittingHolder.address)
 
       const approvalDigest = ethers.utils.keccak256(
         ethers.utils.solidityPack(
@@ -1101,7 +1101,7 @@ describe("ERC20WithPermit", () => {
             deadline
           )
 
-          const initialNonce = await token.nonce(permittingHolder.address)
+          const initialNonce = await token.nonces(permittingHolder.address)
 
           await token
             .connect(anotherAccount)
@@ -1115,11 +1115,11 @@ describe("ERC20WithPermit", () => {
               signature.s
             )
 
-          expect(await token.nonce(permittingHolder.address)).to.equal(
+          expect(await token.nonces(permittingHolder.address)).to.equal(
             initialNonce.add(1)
           )
-          expect(await token.nonce(anotherAccount.address)).to.equal(0)
-          expect(await token.nonce(recipient.address)).to.equal(0)
+          expect(await token.nonces(anotherAccount.address)).to.equal(0)
+          expect(await token.nonces(recipient.address)).to.equal(0)
         })
 
         context("when there was no approved amount before", () => {
