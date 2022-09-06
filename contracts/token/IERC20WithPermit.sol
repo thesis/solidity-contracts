@@ -51,7 +51,7 @@ interface IERC20WithPermit is IERC20, IERC20Metadata, IApproveAndCall {
     /// @notice Returns the current nonce for EIP2612 permission for the
     ///         provided token owner for a replay protection. Used to construct
     ///         EIP2612 signature provided to `permit` function.
-    function nonce(address owner) external view returns (uint256);
+    function nonces(address owner) external view returns (uint256);
 
     /// @notice Returns EIP2612 Permit message hash. Used to construct EIP2612
     ///         signature provided to `permit` function.
