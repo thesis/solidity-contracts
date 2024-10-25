@@ -73,29 +73,29 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
         return true;
     }
 
-    /// @notice Moves `amount` tokens from `spender` to `recipient` using the
+    /// @notice Moves `amount` tokens from `owner` to `recipient` using the
     ///         allowance mechanism. `amount` is then deducted from the caller's
     ///         allowance unless the allowance was made for `type(uint256).max`.
     /// @return True if the operation succeeded, reverts otherwise.
     /// @dev Requirements:
-    ///      - `spender` and `recipient` cannot be the zero address,
-    ///      - `spender` must have a balance of at least `amount`,
-    ///      - the caller must have allowance for `spender`'s tokens of at least
+    ///      - `owner` and `recipient` cannot be the zero address,
+    ///      - `owner` must have a balance of at least `amount`,
+    ///      - the caller must have allowance for `owner`'s tokens of at least
     ///        `amount`.
     function transferFrom(
-        address spender,
+        address owner,
         address recipient,
         uint256 amount
     ) external override returns (bool) {
-        uint256 currentAllowance = allowance[spender][msg.sender];
+        uint256 currentAllowance = allowance[owner][msg.sender];
         if (currentAllowance != type(uint256).max) {
             require(
                 currentAllowance >= amount,
                 "Transfer amount exceeds allowance"
             );
-            _approve(spender, msg.sender, currentAllowance - amount);
+            _approve(owner, msg.sender, currentAllowance - amount);
         }
-        _transfer(spender, recipient, amount);
+        _transfer(owner, recipient, amount);
         return true;
     }
 
@@ -289,21 +289,21 @@ contract ERC20WithPermit is IERC20WithPermit, Ownable {
     }
 
     function _transfer(
-        address spender,
+        address owner,
         address recipient,
         uint256 amount
     ) private {
-        require(spender != address(0), "Transfer from the zero address");
+        require(owner != address(0), "Transfer from the zero address");
         require(recipient != address(0), "Transfer to the zero address");
         require(recipient != address(this), "Transfer to the token address");
 
-        beforeTokenTransfer(spender, recipient, amount);
+        beforeTokenTransfer(owner, recipient, amount);
 
-        uint256 spenderBalance = balanceOf[spender];
-        require(spenderBalance >= amount, "Transfer amount exceeds balance");
-        balanceOf[spender] = spenderBalance - amount;
+        uint256 ownerBalance = balanceOf[owner];
+        require(ownerBalance >= amount, "Transfer amount exceeds balance");
+        balanceOf[owner] = ownerBalance - amount;
         balanceOf[recipient] += amount;
-        emit Transfer(spender, recipient, amount);
+        emit Transfer(owner, recipient, amount);
     }
 
     function _approve(
